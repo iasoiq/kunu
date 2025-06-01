@@ -1,0 +1,21 @@
+[project]
+name = "kunu"
+version = "0.0.1"
+authors = [
+  { name="Justin Bradford", email="justin@iasoiq.com" },
+]
+description = "A simple wrapper of the Kuzu graph db package"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENCSE"]
+
+dependencies = [ "kuzu" ]
+
+[project.urls]
+Homepage = "https://github.com/iasoiq/kunu"
+Issues = "https://github.com/iasoiq/kunu/issues"

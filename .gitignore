@@ -1,0 +1,11 @@
+# python, uv, venv, etc
+__pycache__/
+.venv/
+.ropeproject/
+uv.lock
+
+# kuzu cli history
+history.txt
+
+# tests
+tests/test-db/
