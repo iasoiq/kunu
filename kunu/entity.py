@@ -19,7 +19,6 @@ class Entity:
 
   @property
   def _src(self):
-    print('reading src', self._data['_src'])
     return Entity({'_id': self._data['_src']})
 
   @property

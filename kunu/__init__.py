@@ -1,6 +1,7 @@
 import kuzu
 from typing import Any
 
+from .utils import single_entity
 from .result import Result
 from .entity import Entity, internal_id
 
@@ -23,16 +24,33 @@ class Kunu:
   ):
     return Result(self._conn.execute(query, parameters))
 
-  # @todo: turn `find` into 0+ results, and add `get` for the single result case
   def find(
     self,
-    query: str | kuzu.PreparedStatement,
-    parameters: dict[str, Any] | None = None
-  ) -> Entity|None:
-    r = self._conn.execute(query, parameters)
-    if not r.has_next():
-      return None
-    return Entity(r.get_next()[0])
+    type: str,
+    key: dict[str,Any]
+  ) -> Entity:
+    if len(key) == 0:
+      raise Exception("Missing key")
+    where = ' and '.join([f"x.{k} = ${k}" for k in key])
+    res = self._conn.execute(
+      f"match (x:{type}) where {where} return x",
+      key
+    )
+    return single_entity(res)
+
+  def get(self, id: str) -> Entity:
+    (table, offset) = (int(x) for x in id.split(':'))
+    res = self._conn.execute(
+      f"match (x {{_ID:internal_id({table},{offset})}}) return x"
+    )
+    return single_entity(res)
+
+  def get_edge(self, id: str) -> Entity:
+    (table, offset) = (int(x) for x in id.split(':'))
+    res = self._conn.execute(
+      f"match ()-[x {{_ID:internal_id({table},{offset})}}]->() return x"
+    )
+    return single_entity(res)
 
   def update(
     self,
@@ -40,15 +58,12 @@ class Kunu:
     query: str,
     parameters: dict[str, Any] | None = None
   ):
-    r = self._conn.execute(
+    res = self._conn.execute(
       f"match {entity._match_as('a')} {query} return a",
       parameters
     )
-    if not r.has_next():
-      raise Exception(f"No result for update on {entity._id_str}")
-    return Entity(r.get_next()[0])
+    return single_entity(res)
 
-  # @todo: option for non-merge?
   def link(
     self,
     src: Entity,
@@ -56,18 +71,18 @@ class Kunu:
     type: str,
     props: dict = {}
   ) -> Entity:
-    r = self._conn.execute(
+    set = ', '.join([f"r.{k} = ${k}" for k in props])
+    if len(props) > 0:
+      set = 'set ' + set
+
+    # @todo: option for create instead of merge?
+    res = self._conn.execute(
       f"""
         match {src._match_as('a')}, {dst._match_as('b')}
         merge (a)-[r:{type}]->(b)
+        {set}
         return r
-      """
-      # set r = $p
-      # { 'p': props }
+      """,
+      props
     )
-    if not r.has_next():
-      raise Exception(f"No result for link on {src._id_str}-[:{type}]->{dst._id_str}")
-    e = r.get_next()
-    if r.has_next():
-      raise Exception('Multiple edges returned')
-    return Entity(e[0])
+    return single_entity(res)
