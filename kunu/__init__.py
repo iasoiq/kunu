@@ -85,4 +85,12 @@ class Kunu:
       """,
       props
     )
+
+    # the returned edge does not have the permanent internal id offset
+    # (see https://github.com/kuzudb/kuzu/issues/5481)
+    # we could do something like this, but it would be subject to a race
+    # condition if another thread created a similar edge in between
+    # these two transactions.
+    # match ({src})-[r:{type}]->({dst}) return r order by offset(id(r)) desc limit 1;
+
     return single_entity(res)

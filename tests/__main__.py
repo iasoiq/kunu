@@ -58,7 +58,7 @@ print(r)
 print('> link nodes')
 r = k.link(j, h, 'IsA')
 print(r)
-# id offset is wrong (always returns 2**64) https://github.com/kuzudb/kuzu/issues/5481
+# id offset is wrong (always returns 2**62) https://github.com/kuzudb/kuzu/issues/5481
 print('_id_str:', r._id_str)
 print('_src:', r._src)
 print('_src._id_str:', r._src._id_str)
