@@ -34,28 +34,31 @@ for r in k.execute("match (x:Being) return *"):
     print('_id_internal:', c._internal_id)
     print('_label:', c._label)
     print('name:', c.name)
+    print('<non-existent-property>:', c.missing)
 
 print('> all ids')
 for r in k.execute("match (a) return id(a)"):
   print(r[0], r[0].table, r[0].offset)
 
-print('> find nodes by key')
-j = k.find('Being', {'name': 'Justin'})
-print(j)
-print('<non-existent-property>:', j.missing)
-
-h = k.find('Type', {'name': 'Human'})
-print(h)
-
 print('> get node by id')
 print(k.get("0:3"))
 print(k.get("1:1"))
 
+print('> get node by pk')
+print(k.get_by_pk('Being', 'Ellie'))
+print(k.get_by_pk('Being', 'Katie'))
+
+print('> find node by pk')
+print(k.find_by_pk('Being', 'Milo'))
+print('none', k.find_by_pk('Being', 'Mike'))
+
 print('> update node')
+j = k.get_by_pk('Being', 'Justin')
 r = k.update(j, "set a.mass = $mass", {'mass': 100})
 print(r)
 
 print('> link nodes')
+h = k.get_by_pk('Type', 'Human')
 r = k.link(j, h, 'IsA')
 print(r)
 # id offset is wrong (always returns 2**62) https://github.com/kuzudb/kuzu/issues/5481
@@ -66,8 +69,8 @@ print('_dst:', r._dst)
 print('_dst._id_internal:', r._dst._id_internal)
 
 r = k.link(
-  k.find('Being', {'name': 'Ellie'}),
-  k.find('Type', {'name': 'Dog'}),
+  k.get_by_pk('Being', 'Ellie'),
+  k.get_by_pk('Type', 'Dog'),
   'IsA',
   {'exemplar': True}
 )

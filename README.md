@@ -15,10 +15,20 @@ k.get("1:1")
 => {'_id': {'offset': 1, 'table': 1}, '_label': 'Type', 'name': 'Dog', 'mass': None}
 ```
 
-## Find node by type and primary key
+## Get node by type and primary key
 ```
-k.find('Being', {'name': 'Justin'})
+k.get_by_pk('Being', 'Justin')
 => {'_id': {'offset': 0, 'table': 0}, '_label': 'Being', 'name': 'Justin', 'mass': None}
+```
+
+## Find (if present) node by type and primary key
+```
+k.find_by_pk('Being', 'Justin')
+=> {'_id': {'offset': 0, 'table': 0}, '_label': 'Being', 'name': 'Justin', 'mass': None}
+```
+```
+k.find_by_pk('Being', 'Nonexistent')
+=> None
 ```
 
 ## Update node

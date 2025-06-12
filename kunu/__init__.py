@@ -1,13 +1,14 @@
 import kuzu
 from typing import Any
 
-from .utils import single_entity
+from .utils import single_entity, single_entity_or_none
 from .result import Result
 from .entity import Entity, internal_id
 
 class Kunu:
   _db : kuzu.Database
   _conn : kuzu.Connection
+  _primary_keys : dict[str,str] = {}
 
   def __init__(self, dir: str):
     self._db = kuzu.Database(dir)
@@ -24,19 +25,19 @@ class Kunu:
   ):
     return Result(self._conn.execute(query, parameters))
 
-  def find(
-    self,
-    type: str,
-    key: dict[str,Any]
-  ) -> Entity:
-    if len(key) == 0:
-      raise Exception("Missing key")
-    where = ' and '.join([f"x.{k} = ${k}" for k in key])
-    res = self._conn.execute(
-      f"match (x:{type}) where {where} return x",
-      key
-    )
-    return single_entity(res)
+  def _pk_for(self, type: str) -> str:
+    pk = self._primary_keys.get(type)
+    if pk is not None:
+      return pk
+      pk = self._primary_keys()
+    r = self._conn.execute(f"""
+      call table_info('{type}') where `primary key` = true return name
+    """)
+    pk = r.get_next()[0]
+    if pk is None:
+      raise Exception(f'No primary key found for {type}')
+    self._primary_keys[type] = pk
+    return pk
 
   def get(self, id: str) -> Entity:
     (table, offset) = (int(x) for x in id.split(':'))
@@ -44,6 +45,28 @@ class Kunu:
       f"match (x {{_ID:internal_id({table},{offset})}}) return x"
     )
     return single_entity(res)
+
+  def find_by_pk(
+    self,
+    type: str,
+    value: Any
+  ) -> Entity|None:
+    pk = self._pk_for(type)
+    res = self._conn.execute(
+      f"match (x:{type} {{{pk}:$value}}) return x",
+      {'value': value}
+    )
+    return single_entity_or_none(res)
+
+  def get_by_pk(
+    self,
+    type: str,
+    value: Any
+  ) -> Entity:
+    res = self.find_by_pk(type, value)
+    if res is None:
+      raise Exception('Missing entity')
+    return res
 
   def get_edge(self, id: str) -> Entity:
     (table, offset) = (int(x) for x in id.split(':'))
