@@ -102,10 +102,18 @@ print('> create node')
 r = k.create('Type', 'Cat')
 print(r)
 
+print('> create node with properties')
+r = k.create('Being', 'Ruby', {'mass': 2})
+print(r)
+
 print('> all nodes')
 for r in k.execute("match (x) return x"):
   print(r)
 
 print('> all edges')
 for r in k.execute("match ()-[x]->() return x"):
+  print(r)
+
+print('> orphan nodes')
+for r in k.orphans('Being'):
   print(r)

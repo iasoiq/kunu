@@ -71,14 +71,18 @@ class Kunu:
   def create(
     self,
     type: str,
-    value: Any
+    value: Any,
+    properties: dict[str,Any]|None = None
   ) -> Entity:
     pk = self._pk_for(type)
     res = self._conn.execute(
       f"create (x:{type} {{{pk}:$value}}) return x",
       {'value': value}
     )
-    return single_entity(res)
+    entity = single_entity(res)
+    if properties is None:
+      return entity
+    return self.update(entity, properties)
 
   def get_edge(self, id: str) -> Entity:
     (table, offset) = (int(x) for x in id.split(':'))
@@ -145,3 +149,8 @@ class Kunu:
     # match ({src})-[r:{type}]->({dst}) return r order by offset(id(r)) desc limit 1;
 
     return single_entity(res)
+
+  def orphans(self, type: str) -> Result:
+    return self.execute(f"""
+      match (n:{type}) where not (n)--() return n
+    """)
