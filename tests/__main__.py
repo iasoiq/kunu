@@ -52,9 +52,14 @@ print('> find node by pk')
 print(k.find_by_pk('Being', 'Milo'))
 print('none', k.find_by_pk('Being', 'Mike'))
 
-print('> update node')
+print('> modify node')
 j = k.get_by_pk('Being', 'Justin')
-r = k.update(j, "set a.mass = $mass", {'mass': 100})
+r = k.modify(j, "set a.mass = $mass", {'mass': 100})
+print(r)
+
+print('> update node')
+m = k.get_by_pk('Being', 'Milo')
+r = k.update(m, {'mass': 10})
 print(r)
 
 print('> link nodes')
@@ -80,6 +85,22 @@ print('dst:', k.get(r._dst._id_str))
 
 print('> edge by id')
 print(k.get_edge("2:1"))
+
+print('> all nodes')
+for r in k.execute("match (x) return x"):
+  print(r)
+
+print('> all edges')
+for r in k.execute("match ()-[x]->() return x"):
+  print(r)
+
+print('> remove node')
+r = k.remove(j)
+print(r)
+
+print('> create node')
+r = k.create('Type', 'Cat')
+print(r)
 
 print('> all nodes')
 for r in k.execute("match (x) return x"):

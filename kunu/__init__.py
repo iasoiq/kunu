@@ -68,6 +68,18 @@ class Kunu:
       raise Exception('Missing entity')
     return res
 
+  def create(
+    self,
+    type: str,
+    value: Any
+  ) -> Entity:
+    pk = self._pk_for(type)
+    res = self._conn.execute(
+      f"create (x:{type} {{{pk}:$value}}) return x",
+      {'value': value}
+    )
+    return single_entity(res)
+
   def get_edge(self, id: str) -> Entity:
     (table, offset) = (int(x) for x in id.split(':'))
     res = self._conn.execute(
@@ -75,7 +87,7 @@ class Kunu:
     )
     return single_entity(res)
 
-  def update(
+  def modify(
     self,
     entity: Entity,
     query: str,
@@ -86,6 +98,22 @@ class Kunu:
       parameters
     )
     return single_entity(res)
+
+  def update(
+    self,
+    entity: Entity,
+    properties: dict[str,Any]
+  ):
+    modification = ', '.join(
+      f"a.{prop}=${prop}" for prop in properties
+    )
+    return self.modify(entity, f"SET {modification}", properties)
+
+  def remove(
+    self,
+    entity: Entity
+  ):
+    return self.modify(entity, "detach delete a")
 
   def link(
     self,

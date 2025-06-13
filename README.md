@@ -31,10 +31,28 @@ k.find_by_pk('Being', 'Nonexistent')
 => None
 ```
 
-## Update node
+## Modify node
 ```
 node = k.find('Being', {'name': 'Justin'})
 k.update(node, "set a.mass = $mass", {'mass': 100})
+```
+
+## Update node
+```
+node = k.find('Being', {'name': 'Justin'})
+k.update(node, {'mass': 20})
+```
+
+## Create node
+```
+k.create('Type', 'Cat')
+=> {'_id': {'offset': 2, 'table': 1}, '_label': 'Type', 'name': 'Cat'}
+```
+
+## Remove (and detach) node
+```
+node = k.find('Being', {'name': 'Justin'})
+k.remove(node)
 ```
 
 ## Link nodes

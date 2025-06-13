@@ -6,7 +6,11 @@ class Entity:
     self._data = data
 
   def _match_as(self, var: str) -> str:
-    return f"({var} {{_ID:{self._id_internal}}})"
+    if '_label' in self._data:
+      type = ':' + self._data['_label']
+    else:
+      type = ''
+    return f"({var}{type} {{_ID:{self._id_internal}}})"
 
   @property
   def _id_internal(self):
