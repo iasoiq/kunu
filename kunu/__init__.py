@@ -10,8 +10,8 @@ class Kunu:
   _conn : kuzu.Connection
   _primary_keys : dict[str,str] = {}
 
-  def __init__(self, dir: str):
-    self._db = kuzu.Database(dir)
+  def __init__(self, file: str):
+    self._db = kuzu.Database(file)
     self._conn = kuzu.Connection(self._db)
 
   def close(self):

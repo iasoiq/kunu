@@ -117,3 +117,8 @@ for r in k.execute("match ()-[x]->() return x"):
 print('> orphan nodes')
 for r in k.orphans('Being'):
   print(r)
+
+print('> create on disk db')
+kd = kunu.Kunu('./tests/test-db.kuzu')
+kd.execute('create node table if not exists Thing (name string primary key)')
+kd.close()
